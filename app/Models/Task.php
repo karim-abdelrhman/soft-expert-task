@@ -6,6 +6,7 @@ use App\Enums\Status;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
@@ -17,16 +18,19 @@ class Task extends Model
         'status' => Status::class
     ];
 
-//    public function status(): Attribute
-//    {
-//        return Attribute::make(
-//            get: fn ($value) => Status::labels()[$value] ?? null,
-//            set: fn ($value) => Status::fromLabel($value)
-//        );
-//    }
 
     public function assignee() : BelongsTo
     {
         return $this->belongsTo(User::class, 'assignee_id');
+    }
+
+    public function dependencies()
+    {
+        return $this->belongsToMany(
+            Task::class,
+            'task_dependencies',
+            'task_id',
+            'depends_on'
+        );
     }
 }

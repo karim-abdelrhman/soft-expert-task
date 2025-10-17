@@ -20,8 +20,10 @@ class TaskResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            'date' => $this->date->format('Y-m-d'),
             'status' => $this->status,
             'assignee' => UserResource::make($this->whenLoaded('assignee')),
+            'dependencies' => TaskResource::collection($this->whenLoaded('dependencies')),
         ];
     }
 }

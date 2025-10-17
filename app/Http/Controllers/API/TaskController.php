@@ -6,8 +6,10 @@ use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\TaskStoreRequest;
 use App\Http\Requests\API\TaskUpdateRequest;
+use App\Http\Requests\ValidateDependencyRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Models\TaskDependency;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -27,8 +29,8 @@ class TaskController extends Controller
             }
         }
 
-        if ($request->filled('date')) {
-            $query->whereDate('date', $request->query('date'));
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $query->whereBetween('date',[$request->query('date_from'), $request->query('date_to')]);
         }
 
         if (!is_null($request->query('assignee')) && $request->query('assignee') !== '') {
@@ -110,19 +112,22 @@ class TaskController extends Controller
     public function update(TaskUpdateRequest $request, Task $task)
     {
         $data = $request->validated();
-        $data['status'] = Status::fromLabel($data['status']);
+
         $task->update($data);
 
         return response()->json([
             'success' => true,
             'message' => 'Task updated successfully',
-            'data' => $task,
+            'data' => TaskResource::make($task->load('assignee')),
             'code' => 200
         ]);
     }
 
     public function show(Task $task)
     {
+        if($task->dependencies->count() > 0) {
+            $task->load('dependencies');
+        }
         return response()->json([
             'success' => true,
             'message' => 'Task fetched successfully',
@@ -137,6 +142,49 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task deleted successfully',
+        ]);
+    }
+
+    public function updateStatus(Request $request, Task $task)
+    {
+        /**
+         * so some validation before update status
+         * 1- check if this task has dependencies
+         * 2- check if all dependencies completed
+         */
+        if ($task->dependencies->count() > 0 && $request->status == 'completed') {
+            foreach ($task->dependencies as $dependency) {
+                if ($dependency->status->value !== Status::fromLabel('completed')) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You have to finish task dependencies before update this task',
+                    ]);
+                }
+            }
+        }
+
+        $task->update(['status' => Status::fromLabel($request->status)]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task updated successfully',
+            'data' => TaskResource::make($task->load('assignee')),
+        ]);
+    }
+
+    public function addDependencies(ValidateDependencyRequest $request)
+    {
+        $data = $request->validated();
+        foreach ($data['dependencies'] as $dependency) {
+            TaskDependency::create([
+                'task_id' => $data['task_id'],
+                'depends_on' => $dependency,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task dependencies fetched successfully',
         ]);
     }
 }

@@ -17,4 +17,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::resource('/tasks', TaskController::class);
+    Route::post('/tasks/{task}/update-status', [TaskController::class, 'updateStatus']);
+    Route::post('/tasks/add-dependencies', [TaskController::class, 'addDependencies']);
 });

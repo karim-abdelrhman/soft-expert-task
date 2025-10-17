@@ -25,7 +25,6 @@ class TaskUpdateRequest extends FormRequest
             'title' => 'required|string',
             'description' => 'required|string',
             'assignee_id' => 'required|exists:users,id|integer',
-            'status' => 'required|string|in:pending,completed,cancelled',
             'date' => 'required|date',
         ];
     }
