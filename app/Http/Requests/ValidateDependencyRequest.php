@@ -15,7 +15,8 @@ class ValidateDependencyRequest extends FormRequest
         return true;
     }
 
-    public function prepareForValidation()
+
+    public function prepareForValidation(): void
     {
         if ($this->filled('dependencies') && is_string($this->dependencies)) {
             $this->merge([
@@ -27,7 +28,6 @@ class ValidateDependencyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'task_id' => ['required', 'integer', 'exists:tasks,id'],
 
             'dependencies' => ['required', 'array'],
 
@@ -37,10 +37,9 @@ class ValidateDependencyRequest extends FormRequest
                 Rule::exists('tasks', 'id'),
 
                 function ($attribute, $value, $fail) {
-                    $taskId = $this->task_id;
-
+                    $task = $this->route('task');
                     $exists = \DB::table('task_dependencies')
-                        ->where('task_id', $taskId)
+                        ->where('task_id', $task->id)
                         ->where('depends_on', $value)
                         ->exists();
 

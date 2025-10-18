@@ -16,7 +16,12 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Task::query()->with('assignee');
+        $query = Task::query()
+            ->with('assignee');
+
+        if(auth()->user()->hasRole('user')){
+            $query->where('assignee_id' , auth()->id());
+        }
 
         // Filter by status (accepts label like 'pending' or integer value)
         if ($request->filled('status')) {
@@ -145,8 +150,15 @@ class TaskController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Task $task)
+    public function update_status(Request $request, Task $task)
     {
+        if($task->assignee->id !== auth()->id()){
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized, You can\'t update this task status',
+                'code' => 401
+            ]);
+        }
         /**
          * so some validation before update status
          * 1- check if this task has dependencies
@@ -158,6 +170,7 @@ class TaskController extends Controller
                     return response()->json([
                         'success' => false,
                         'message' => 'You have to finish task dependencies before update this task',
+                        'task' => TaskResource::make($task->load(['assignee','dependencies'])),
                     ]);
                 }
             }
@@ -168,23 +181,52 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task updated successfully',
-            'data' => TaskResource::make($task->load('assignee')),
+            'task' => TaskResource::make($task->load(['assignee' , 'dependencies'])),
         ]);
     }
 
-    public function addDependencies(ValidateDependencyRequest $request)
+    public function add_dependencies(ValidateDependencyRequest $request, Task $task)
     {
         $data = $request->validated();
         foreach ($data['dependencies'] as $dependency) {
             TaskDependency::create([
-                'task_id' => $data['task_id'],
+                'task_id' => $task->id,
                 'depends_on' => $dependency,
             ]);
         }
-
         return response()->json([
             'success' => true,
             'message' => 'Task dependencies fetched successfully',
+            'data' => TaskResource::make($task->load('dependencies')),
+        ]);
+    }
+
+    public function assign_task_to_user(Request $request)
+    {
+        $data = $request->validate([
+            'task_id' => 'required|integer|exists:tasks,id',
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
+
+        // 1- before get task we should check if task doesn't have an assignee
+        $task = Task::where('id', $data['task_id'])->firstOrFail();
+
+        if($task->assignee_id){
+           return response()->json([
+               'success' => false,
+               'message' => 'Task already assigned to user',
+               'data' => TaskResource::make($task->load('assignee')),
+           ]);
+        }
+
+        $task->update([
+            'assignee_id' => $data['user_id'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task assigned successfully',
+            'data' => TaskResource::make($task->load('assignee')),
         ]);
     }
 }

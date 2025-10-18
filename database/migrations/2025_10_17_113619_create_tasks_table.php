@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
-            $table->foreignId('assignee_id')->constrained('users' , 'id')->cascadeOnDelete();
+            $table->foreignId('assignee_id')->nullable()->constrained('users' , 'id')->cascadeOnDelete();
             $table->date('date');
             $table->integer('status')->default(0);
             $table->timestamps();
