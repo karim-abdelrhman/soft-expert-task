@@ -11,6 +11,7 @@ use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Models\TaskDependency;
 use Illuminate\Http\Request;
+use Illuminate\Validation\UnauthorizedException;
 
 class TaskController extends Controller
 {
@@ -130,6 +131,12 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
+        if($task->assignee_id !== auth()->id()){
+            return response()->json([
+                'success' => false,
+                'message' => 'Task not assigned to this assignee',
+            ]);
+        }
         if($task->dependencies->count() > 0) {
             $task->load('dependencies');
         }
