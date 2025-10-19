@@ -7,96 +7,35 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\API\TaskStoreRequest;
 use App\Http\Requests\API\TaskUpdateRequest;
 use App\Http\Requests\ValidateDependencyRequest;
+use App\Http\Resources\TaskCollection;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Models\TaskDependency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
         $query = Task::query()
-            ->with('assignee');
+            ->with('assignee')
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $q->where('status', Status::fromLabel($request->status));
+            })
+            ->when($request->filled('assignee'), function ($q) use ($request) {
+                $q->where('assignee_id', $request->assignee);
+            })
+            ->when($request->filled('date_from') && $request->filled('date_to'), function ($q) use ($request) {
+                $q->whereBetween('date', [$request->date_from, $request->date_to]);
+            });
 
-        if(!$request->user()->isManager()) {
+        if (!$request->user()->isManager()) {
             $query->where('assignee_id', $request->user()->id);
         }
 
-        // Filter by status (accepts label like 'pending' or integer value)
-        if ($request->filled('status')) {
-            $statusParam = $request->query('status');
-
-            $statusValue = Status::fromLabel(strtolower($statusParam));
-
-            if ($statusValue !== null) {
-                $query->where('status', $statusValue);
-            }
-        }
-
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $query->whereBetween('date',[$request->query('date_from'), $request->query('date_to')]);
-        }
-
-        if (!is_null($request->query('assignee')) && $request->query('assignee') !== '') {
-            $query->where('assignee_id', (int)$request->query('assignee'));
-        }
-
-
-        $useOffsetLimit = $request->filled('limit') || $request->filled('offset');
-
-        if ($useOffsetLimit) {
-            $limit = (int)$request->query('limit', 15);
-            $limit = max(1, min($limit, 100));
-            $offset = (int)$request->query('offset', 0);
-            $offset = max(0, $offset);
-
-            $total = (clone $query)->count();
-            $tasks = $query->skip($offset)->take($limit)->get();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Tasks fetched successfully',
-                'data' => TaskResource::collection($tasks),
-                'meta' => [
-                    'total' => $total,
-                    'count' => $tasks->count(),
-                    'offset' => $offset,
-                    'limit' => $limit,
-                    'has_more' => ($offset + $tasks->count()) < $total,
-                ],
-                'code' => 200
-            ]);
-        } else {
-            $perPage = (int)$request->query('per_page', 15);
-            $perPage = max(1, min($perPage, 100));
-            $page = (int)$request->query('page', 1);
-            $page = max(1, $page);
-
-            $paginator = $query->paginate($perPage, ['*'], 'page', $page);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Tasks fetched successfully',
-                'data' => TaskResource::collection($paginator->items()),
-                'meta' => [
-                    'current_page' => $paginator->currentPage(),
-                    'per_page' => $paginator->perPage(),
-                    'total' => $paginator->total(),
-                    'last_page' => $paginator->lastPage(),
-                    'from' => $paginator->firstItem(),
-                    'to' => $paginator->lastItem(),
-                ],
-                'links' => [
-                    'first' => $paginator->url(1),
-                    'last' => $paginator->url($paginator->lastPage()),
-                    'prev' => $paginator->previousPageUrl(),
-                    'next' => $paginator->nextPageUrl(),
-                ],
-                'code' => 200
-            ]);
-        }
+        return TaskCollection::make($query->paginate($request->filled('per_page') ? $request->query('per_page') : 10));
     }
 
     public function store(TaskStoreRequest $request)
@@ -113,8 +52,7 @@ class TaskController extends Controller
             'success' => true,
             'message' => 'Task created successfully',
             'data' => TaskResource::make($task->load('assignee')),
-            'code' => 201
-        ]);
+        ], Response::HTTP_CREATED);
     }
 
     public function update(TaskUpdateRequest $request, Task $task)
@@ -135,13 +73,13 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
-        if($task->assignee_id !== auth()->id()){
+        if ($task->assignee_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Task not assigned to this assignee',
             ]);
         }
-        if($task->dependencies->count() > 0) {
+        if ($task->dependencies->count() > 0) {
             $task->load('dependencies');
         }
         return response()->json([
@@ -177,7 +115,7 @@ class TaskController extends Controller
                     return response()->json([
                         'success' => false,
                         'message' => 'You have to finish task dependencies before update this task',
-                        'task' => TaskResource::make($task->load(['assignee','dependencies'])),
+                        'task' => TaskResource::make($task->load(['assignee', 'dependencies'])),
                     ]);
                 }
             }
@@ -188,7 +126,7 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task updated successfully',
-            'task' => TaskResource::make($task->load(['assignee' , 'dependencies'])),
+            'task' => TaskResource::make($task->load(['assignee', 'dependencies'])),
         ]);
     }
 
@@ -225,12 +163,12 @@ class TaskController extends Controller
         // 1- before get task we should check if task doesn't have an assignee
         $task = Task::where('id', $data['task_id'])->firstOrFail();
 
-        if($task->assignee_id){
-           return response()->json([
-               'success' => false,
-               'message' => 'Task already assigned to user',
-               'data' => TaskResource::make($task->load('assignee')),
-           ]);
+        if ($task->assignee_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Task already assigned to user',
+                'data' => TaskResource::make($task->load('assignee')),
+            ]);
         }
 
         $task->update([

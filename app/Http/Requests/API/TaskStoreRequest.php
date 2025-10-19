@@ -24,7 +24,7 @@ class TaskStoreRequest extends FormRequest
         return [
             'title' => 'required|string',
             'description' => 'required|string',
-            'assignee_id' => 'required|integer|exists:users,id',
+            'assignee_id' => 'nullable|integer|exists:users,id',
             'date' => 'required|date',
             'status' => 'required|string|In:pending,completed,cancelled',
         ];

@@ -6,12 +6,14 @@ use App\Enums\Status;
 use App\Policies\TaskPolicy;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 #[UsePolicy(TaskPolicy::class)]
 class Task extends Model
 {
+    use HasFactory;
     protected $table = 'tasks';
     protected $fillable = ['title' , 'description' , 'assignee_id' , 'date', 'status'];
     protected $casts = [

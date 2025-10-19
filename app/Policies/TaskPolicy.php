@@ -27,7 +27,8 @@ class TaskPolicy
     {
         return $user->isManager()
             ? Response::allow()
-            : Response::deny('You do not have permission to create tasks.' , 403);
+            : Response::deny('You do not have permission to create tasks.' ,
+                \Symfony\Component\HttpFoundation\Response::HTTP_UNAUTHORIZED);
     }
 
     /**
