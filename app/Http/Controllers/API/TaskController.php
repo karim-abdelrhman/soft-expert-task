@@ -11,7 +11,7 @@ use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Models\TaskDependency;
 use Illuminate\Http\Request;
-use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Support\Facades\Gate;
 
 class TaskController extends Controller
 {
@@ -20,8 +20,8 @@ class TaskController extends Controller
         $query = Task::query()
             ->with('assignee');
 
-        if(auth()->user()->hasRole('user')){
-            $query->where('assignee_id' , auth()->id());
+        if(!$request->user()->isManager()) {
+            $query->where('assignee_id', $request->user()->id);
         }
 
         // Filter by status (accepts label like 'pending' or integer value)
@@ -103,6 +103,8 @@ class TaskController extends Controller
     {
         $data = $request->validated();
 
+        Gate::authorize('create', Task::class);
+
         $data['status'] = Status::fromLabel($data['status']);
 
         $task = Task::create($data);
@@ -118,6 +120,8 @@ class TaskController extends Controller
     public function update(TaskUpdateRequest $request, Task $task)
     {
         $data = $request->validated();
+
+        Gate::authorize('update', $task);
 
         $task->update($data);
 
@@ -150,6 +154,7 @@ class TaskController extends Controller
 
     public function destroy(Request $request, Task $task)
     {
+        Gate::authorize('destroy', $task);
         $task->delete();
         return response()->json([
             'success' => true,
@@ -159,13 +164,8 @@ class TaskController extends Controller
 
     public function update_status(Request $request, Task $task)
     {
-        if($task->assignee->id !== auth()->id()){
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized, You can\'t update this task status',
-                'code' => 401
-            ]);
-        }
+        Gate::authorize('updateStatus', $task);
+
         /**
          * so some validation before update status
          * 1- check if this task has dependencies
@@ -195,6 +195,9 @@ class TaskController extends Controller
     public function add_dependencies(ValidateDependencyRequest $request, Task $task)
     {
         $data = $request->validated();
+
+        Gate::authorize('addDependencies', $task);
+
         foreach ($data['dependencies'] as $dependency) {
             TaskDependency::create([
                 'task_id' => $task->id,
@@ -214,6 +217,10 @@ class TaskController extends Controller
             'task_id' => 'required|integer|exists:tasks,id',
             'user_id' => 'required|integer|exists:users,id',
         ]);
+
+        $task = Task::find($data['task_id']);
+
+        Gate::authorize('assignTask', $task);
 
         // 1- before get task we should check if task doesn't have an assignee
         $task = Task::where('id', $data['task_id'])->firstOrFail();

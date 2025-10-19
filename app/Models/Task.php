@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Enums\Status;
+use App\Policies\TaskPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+#[UsePolicy(TaskPolicy::class)]
 class Task extends Model
 {
     protected $table = 'tasks';
@@ -18,6 +20,12 @@ class Task extends Model
         'status' => Status::class
     ];
 
+    public function status() : Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => Status::labels()[$value],
+        );
+    }
 
     public function assignee() : BelongsTo
     {

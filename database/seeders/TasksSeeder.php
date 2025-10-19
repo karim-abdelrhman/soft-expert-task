@@ -19,12 +19,14 @@ class TasksSeeder extends Seeder
                 'title' => 'do your homework',
                 'description' => 'do your homework description',
                 'date' => '2025-10-15',
+                'assignee_id' => 3,
             ],
             [
                 'id' => 2,
                 'title' => 'Go to School',
                 'description' => 'Go to School description',
                 'date' => '2025-10-15',
+                'assignee_id' => 2,
             ],
             [
                 'id' => 3,

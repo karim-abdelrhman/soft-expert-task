@@ -15,18 +15,14 @@ class UserSystemSeeder extends Seeder
     public function run(): void
     {
 
-
-        $manager = User::create([
-            'id' => 1,
-            'name' => 'Manager 1',
-            'email' => 'manager@gmail.com',
-            'password' => Hash::make('password'),
-        ]);
-
-        $manager->assignRole('manager');
-
-
         $users = [
+            [
+                'id' => 1,
+                'name' => 'Manager 1',
+                'email' => 'manager@gmail.com',
+                'password' => Hash::make('password'),
+                'is_manager' => true,
+            ],
             [
                 'id' => 2,
                 'name' => 'User 1',
@@ -39,12 +35,16 @@ class UserSystemSeeder extends Seeder
                 'email' => 'user2@gmail.com',
                 'password' => Hash::make('password'),
             ],
+            [
+                'id' => 4,
+                'name' => 'User 3',
+                'email' => 'user3@gmail.com',
+                'password' => Hash::make('password'),
+            ],
         ];
 
         foreach ($users as $user) {
-            $user = User::create($user);
-            $user->assignRole('user');
+            User::create($user);
         }
-
     }
 }
