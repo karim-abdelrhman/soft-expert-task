@@ -61,6 +61,13 @@ The API is now running at:
 ```
 http://localhost:8080
 ```
+## 📮 API Documentation
+
+### Postman Collection
+Import the Postman collection to test all API endpoints:
+
+https://documenter.getpostman.com/view/31443966/2sB3QQL8TD
+
 
 ---
 
@@ -88,7 +95,13 @@ php artisan test
 
 **All tests should pass ✅**
 
+<img width="1337" height="554" alt="Screenshot from 2025-10-20 22-57-47" src="https://github.com/user-attachments/assets/21631aa8-d738-4f52-97b5-f2bdbe4747e3" />
 ---
+
+
+## 🗄️ ERD For Database
+
+<img width="1490" height="686" alt="Screenshot from 2025-10-18 14-21-22" src="https://github.com/user-attachments/assets/df800801-cf79-4827-b037-b13e16cbbd38" />
 
 
 ## 🐛 Troubleshooting
@@ -117,7 +130,7 @@ After running `php artisan db:seed`:
 | user2@gmail.com | password | User |
 
 ---
-## 🗄️ ERD For Database
+
 
 
 ## 🎯 Summary
