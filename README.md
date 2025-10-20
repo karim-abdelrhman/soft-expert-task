@@ -68,7 +68,9 @@ Import the Postman collection to test all API endpoints:
 
 https://documenter.getpostman.com/view/31443966/2sB3QQL8TD
 
-
+**Or click here:**
+- [Download Postman Collection](./postman/Soft-Expert-Task-(V1).postman_collection.json)
+- [📄 View Collection](./postman/Soft-Expert-Task-(V1).postman_collection.json)
 ---
 
 ## 📦 What's Included After Seeding
