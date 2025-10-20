@@ -32,7 +32,7 @@ class AuthorizationTest extends TestCase
         );
 
         $response = $this->actingAs($user)
-            ->postJson('/api/tasks', [
+            ->postJson('/api/v1/tasks', [
                     'title' => 'Test Task',
                     'description' => 'Test Description',
                     'date' => "2025-10-19",
@@ -67,7 +67,7 @@ class AuthorizationTest extends TestCase
         $task = Task::factory()->create();
         $date = now()->format('Y-m-d');
         $response = $this->actingAs($user)
-            ->putJson("/api/tasks/{$task->id}", [
+            ->putJson("/api/v1/tasks/{$task->id}", [
                 'title' => 'Test Task updated',
                 'description' => 'Test Description updated',
                 'date' => $date,
@@ -89,7 +89,7 @@ class AuthorizationTest extends TestCase
         $manager = User::factory()->create(['is_manager' => true]);
 
         $response = $this->actingAs($manager)
-            ->postJson("/api/tasks/{$task->id}/assign", [
+            ->postJson("/api/v1/tasks/{$task->id}/assign", [
                 'user_id' => $user->id,
             ]);
 
@@ -108,7 +108,7 @@ class AuthorizationTest extends TestCase
         $another_user = User::factory()->create();
 
         $response = $this->actingAs($user)
-            ->postJson("/api/tasks/{$task->id}/assign", [
+            ->postJson("/api/v1/tasks/{$task->id}/assign", [
                 'user_id' => $another_user->id
             ]);
         $response->assertStatus(Response::HTTP_FORBIDDEN);
@@ -123,7 +123,7 @@ class AuthorizationTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)
-            ->postJson('/api/tasks', [
+            ->postJson('/api/v1/tasks', [
                     'title' => 'Test Task',
                     'description' => 'Test Description',
                     'date' => "2025-10-19",
@@ -152,7 +152,7 @@ class AuthorizationTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/tasks/{$task->id}/update-status", [
+            ->postJson("/api/v1/tasks/{$task->id}/update-status", [
                     'status' => 'completed',
                 ]
             );
@@ -185,7 +185,7 @@ class AuthorizationTest extends TestCase
         ]);
 
         $response = $this->actingAs($anotherUser)
-            ->postJson("/api/tasks/{$task->id}/update-status", [
+            ->postJson("/api/v1/tasks/{$task->id}/update-status", [
                 'status' => 'completed',
             ]);
         $response->assertStatus(Response::HTTP_FORBIDDEN);
@@ -216,7 +216,7 @@ class AuthorizationTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->getJson("api/tasks");
+            ->getJson("api/v1/tasks");
 
         $response->assertStatus(Response::HTTP_OK);
         $response->assertSee($task->title);

@@ -24,7 +24,7 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'password123',
         ];
 
-        $response = $this->postJson('/api/register', $userData);
+        $response = $this->postJson('/api/v1/register', $userData);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
@@ -63,7 +63,7 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'password123',
         ];
 
-        $response = $this->postJson('/api/register', $userData);
+        $response = $this->postJson('/api/v1/register', $userData);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
@@ -72,7 +72,7 @@ class AuthenticationTest extends TestCase
     #[Test]
     public function user_cannot_register_with_invalid_data()
     {
-        $response = $this->postJson('/api/register', []);
+        $response = $this->postJson('/api/v1/register', []);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name', 'email', 'password']);
@@ -86,7 +86,7 @@ class AuthenticationTest extends TestCase
             'password' => Hash::make('password123'),
         ]);
 
-        $response = $this->postJson('/api/login', [
+        $response = $this->postJson('/api/v1/login', [
             'email' => 'manager@gmail.com',
             'password' => 'password123',
         ]);
@@ -107,7 +107,7 @@ class AuthenticationTest extends TestCase
     #[Test]
     public function user_cannot_login_with_invalid_email()
     {
-        $response = $this->postJson('/api/login', [
+        $response = $this->postJson('/api/v1/login', [
             'email' => 'invalid_email@gmail.com',
             'password' => 'password123',
         ]);
@@ -127,7 +127,7 @@ class AuthenticationTest extends TestCase
             'password' => Hash::make('valid_password'),
         ]);
 
-        $response = $this->postJson('/api/login', [
+        $response = $this->postJson('/api/v1/login', [
             'email' => 'test@gmail.com',
             'password' => 'invalid_password',
         ]);
@@ -146,7 +146,7 @@ class AuthenticationTest extends TestCase
         $token = $user->createToken('authToken')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/logout');
+            ->postJson('/api/v1/logout');
 
         $response->assertStatus(200)
             ->assertJson([
