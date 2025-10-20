@@ -59,7 +59,7 @@ php artisan db:seed
 
 The API is now running at:
 ```
-http://localhost:8080/api/v1
+http://localhost:8080
 ```
 
 ---
@@ -70,8 +70,8 @@ The `db:seed` command creates:
 
 ✅ **3 Users:**
 - Manager: `manager@gmail.com` / `password`
-- User: `user1@gmail.com` / `password`
-- User: `user2@gmail.com` / `password`
+- User1: `user1@gmail.com` / `password`
+- User2: `user2@gmail.com` / `password`
 
 ✅ **Sample Tasks** with dependencies to test the system
 

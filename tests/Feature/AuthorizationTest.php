@@ -67,7 +67,7 @@ class AuthorizationTest extends TestCase
         $task = Task::factory()->create();
         $date = now()->format('Y-m-d');
         $response = $this->actingAs($user)
-            ->putJson("/api/v1/tasks/{$task->id}", [
+            ->patchJson("/api/v1/tasks/{$task->id}", [
                 'title' => 'Test Task updated',
                 'description' => 'Test Description updated',
                 'date' => $date,
@@ -152,7 +152,7 @@ class AuthorizationTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/v1/tasks/{$task->id}/update-status", [
+            ->patchJson("/api/v1/tasks/{$task->id}/update-status", [
                     'status' => 'completed',
                 ]
             );
@@ -185,7 +185,7 @@ class AuthorizationTest extends TestCase
         ]);
 
         $response = $this->actingAs($anotherUser)
-            ->postJson("/api/v1/tasks/{$task->id}/update-status", [
+            ->patchJson("/api/v1/tasks/{$task->id}/update-status", [
                 'status' => 'completed',
             ]);
         $response->assertStatus(Response::HTTP_FORBIDDEN);

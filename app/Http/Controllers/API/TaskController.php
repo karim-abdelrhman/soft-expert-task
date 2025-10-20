@@ -54,6 +54,8 @@ class TaskController extends Controller
     {
         $data = $request->validated();
 
+        Gate::authorize('create', Task::class);
+
         $task = Task::create($data);
 
         return $this->successResponse(
@@ -67,6 +69,8 @@ class TaskController extends Controller
     {
         $data = $request->validated();
 
+        Gate::authorize('update', $task);
+
         $task->update($data);
 
         return $this->successResponse(
@@ -78,6 +82,8 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
+        Gate::authorize('view', $task);
+
         return $this->successResponse(
             data: TaskResource::make($task->load(['assignee' , 'dependencies'])),
             message: 'Task retrieved successfully',
@@ -87,6 +93,7 @@ class TaskController extends Controller
 
     public function destroy(Request $request, Task $task)
     {
+        Gate::authorize('delete', $task);
         $task->delete();
         return response()->json([
             'success' => true,
