@@ -71,7 +71,7 @@ class AuthorizationTest extends TestCase
                 'title' => 'Test Task updated',
                 'description' => 'Test Description updated',
                 'date' => $date,
-                'status' => Status::fromLabel('pending'),
+                'status' => 'pending',
             ]);
         $response->assertStatus(Response::HTTP_OK);
         $this->assertDatabaseHas('tasks', [
@@ -81,6 +81,42 @@ class AuthorizationTest extends TestCase
         ]);
 
     }
+    #[Test]
+    public function manager_can_assign_a_task_to_user()
+    {
+        $task = Task::factory()->create();
+        $user = User::factory()->create();
+        $manager = User::factory()->create(['is_manager' => true]);
+
+        $response = $this->actingAs($manager)
+            ->postJson("/api/tasks/{$task->id}/assign", [
+                'user_id' => $user->id,
+            ]);
+
+        $response->assertStatus(Response::HTTP_OK);
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'assignee_id' => $user->id,
+        ]);
+    }
+
+    #[Test]
+    public function user_throw_authorization_exception_when_assign_a_task()
+    {
+        $task = Task::factory()->create();
+        $user = User::factory()->create();
+        $another_user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/tasks/{$task->id}/assign", [
+                'user_id' => $another_user->id
+            ]);
+        $response->assertStatus(Response::HTTP_FORBIDDEN);
+        $response->assertJson([
+            'message' => 'You do not have permission to assign tasks.'
+        ]);
+    }
+
     #[Test]
     public function user_can_not_create_a_task(): void
     {
@@ -106,28 +142,21 @@ class AuthorizationTest extends TestCase
     public function user_can_update_only_status_of_task_assigned_to_him()
     {
         $user = User::factory()->create();
-        $anotherUser = User::factory()->create(
-            [
-                'name' => 'invalid user',
-                'email' => 'user2@gmail.com',
-                'password' => Hash::make('password'),
-            ]
-        );
+
         $task = Task::create([
             'title' => 'Test Task',
             'description' => 'Test Description',
             'date' => "2025-10-19",
-            'status' => Status::fromLabel('pending'),
+            'status' => 'pending',
             'assignee_id' => $user->id
         ]);
-//        dd($task->status , Status::labels()[1]);
+
         $response = $this->actingAs($user)
             ->postJson("/api/tasks/{$task->id}/update-status", [
                     'status' => 'completed',
                 ]
             );
 
-//        $this->assertEquals($task->status, Status::fromLabel('completed'));
         $response->assertStatus(Response::HTTP_OK);
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
@@ -136,7 +165,7 @@ class AuthorizationTest extends TestCase
     }
 
     #[Test]
-    public function user_throw_unauthorization_exception_when_try_to_update_a_task_does_not_assigned_to_him()
+    public function user_throw_authorization_exception_when_try_to_update_a_task_does_not_assigned_to_him()
     {
         $user = User::factory()->create();
         $anotherUser = User::factory()->create(
@@ -151,7 +180,7 @@ class AuthorizationTest extends TestCase
             'title' => 'Test Task',
             'description' => 'Test Description',
             'date' => "2025-10-19",
-            'status' => Status::fromLabel('pending'),
+            'status' => 'pending',
             'assignee_id' => $user->id
         ]);
 
@@ -173,7 +202,7 @@ class AuthorizationTest extends TestCase
             'title' => 'Test Task',
             'description' => 'Test Description',
             'date' => "2025-10-19",
-            'status' => Status::fromLabel('pending'),
+            'status' => 'pending',
             'assignee_id' => $user->id
         ]);
 
@@ -182,7 +211,7 @@ class AuthorizationTest extends TestCase
             'title' => 'Test Task2',
             'description' => 'Test Description2',
             'date' => "2025-10-19",
-            'status' => Status::fromLabel('pending'),
+            'status' => 'pending',
             'assignee_id' => $user2->id
         ]);
 

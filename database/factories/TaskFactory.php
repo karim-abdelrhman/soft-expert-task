@@ -19,8 +19,8 @@ class TaskFactory extends Factory
         return [
             'title' => $this->faker->jobTitle(),
             'description' => $this->faker->text(),
-            'status' => $this->faker->randomElement([0,1,2]),
-            'date' => $this->faker->date()
+            'status' => $this->faker->randomElement(['pending', 'completed', 'cancelled']),
+            'date' => $this->faker->date(),
         ];
     }
 }

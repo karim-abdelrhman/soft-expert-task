@@ -9,32 +9,40 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 #[UsePolicy(TaskPolicy::class)]
 class Task extends Model
 {
     use HasFactory;
+
     protected $table = 'tasks';
-    protected $fillable = ['title' , 'description' , 'assignee_id' , 'date', 'status'];
+    protected $fillable = ['title', 'description', 'assignee_id', 'date', 'status'];
     protected $casts = [
         'assignee_id' => 'integer',
         'date' => 'date',
         'status' => Status::class
     ];
 
-    public function status() : Attribute
+    public function status(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => Status::labels()[$value],
+            get: fn($value) => Status::labels()[$value],
+            set: fn($value) => Status::fromLabel($value)
         );
     }
 
-    public function assignee() : BelongsTo
+    public function haveAssignee(): bool
+    {
+        return !is_null($this->assignee_id);
+    }
+
+    public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assignee_id');
     }
 
-    public function dependencies()
+    public function dependencies(): BelongsToMany
     {
         return $this->belongsToMany(
             Task::class,
