@@ -69,21 +69,7 @@ Import the Postman collection to test all API endpoints:
 https://documenter.getpostman.com/view/31443966/2sB3QQL8TD
 
 **Or click here:**
-- [Download Postman Collection](./postman/Soft-Expert-Task-(V1).postman_collection.json)
-- [📄 View Collection](./postman/Soft-Expert-Task-(V1).postman_collection.json)
----
-
-## 📦 What's Included After Seeding
-
-The `db:seed` command creates:
-
-✅ **3 Users:**
-- Manager: `manager@gmail.com` / `password`
-- User1: `user1@gmail.com` / `password`
-- User2: `user2@gmail.com` / `password`
-
-✅ **Sample Tasks** with dependencies to test the system
-
+- [📄 View Collection](./postman/Soft_Expert(v1).postman_collection.json)
 ---
 
 ## 🧪 Running Tests
@@ -116,7 +102,7 @@ ports:
 ```
 ### Permission issues?
 ```b
-docker-compose exec -it app chmod -R 777 storage bootstrap/cache
+docker compose exec -it app bash chmod -R 777 storage bootstrap/cache
 ```
 
 ---
@@ -124,12 +110,27 @@ docker-compose exec -it app chmod -R 777 storage bootstrap/cache
 ## 📋 Default Credentials
 
 After running `php artisan db:seed`:
+users , tasks , task_dependencies tables    
 
 | Email             | Password | Role |
 |-------------------|----------|------|
-| manager@gmail.com | password | Manager |
+| manager@gmail.com | password | Manager|
 | user1@gmail.com   | password | User |
-| user2@gmail.com | password | User |
+| user2@gmail.com   | password | User |
+| user3@gmail.com   | password | User |
+
+| title             | assignee_id | status    |
+|-------------------|-------------|-----------|
+| do your homework | 2           | pending   |
+| Go to School   | 2           | pending   |
+| wash your hands   | 3           | pending   |
+| clean the floor   | 3           | completed |
+| Solve problem   | null        | canclled  |
+
+| id | task_id | depends_on |
+|----|---------|------------|
+| 1  | 1       | 2          |
+| 2  | 3       | 4          |
 
 ---
 

@@ -84,7 +84,7 @@
 							"formdata": [
 								{
 									"key": "email",
-									"value": "manager@gmail.com",
+									"value": "user1@gmail.com",
 									"type": "text"
 								},
 								{
@@ -352,7 +352,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token}}",
+									"value": "2|opVlz1VKrCNyES2Uq54VTyWLUjhvDDTJRwsxh9tVa319115e",
 									"type": "string"
 								}
 							]
@@ -369,13 +369,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/tasks/2/update-status",
+							"raw": "{{url}}/tasks/1/update-status",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"tasks",
-								"2",
+								"1",
 								"update-status"
 							]
 						}
@@ -550,22 +550,23 @@
 							"formdata": [
 								{
 									"key": "user_id",
-									"value": "2",
+									"value": "4",
 									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "{{url}}/tasks/2/assign",
+							"raw": "{{url}}/tasks/5/assign",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"tasks",
-								"2",
+								"5",
 								"assign"
 							]
-						}
+						},
+						"description": "- You can assign a Task to user if you're only manager\n    \n- Otherwise you'll get an authorization error\n    \n- you can assign a Task by send user_id in request body"
 					},
 					"response": []
 				},
@@ -607,6 +608,73 @@
 							"path": [
 								"tasks",
 								"5"
+							]
+						},
+						"description": "You've to register as a user to update status and update token\n\n- If Task has a dependencies then you get a message \"You have to finish task dependencies before update this task.\"\n    \n- Else you can update the task"
+					},
+					"response": []
+				},
+				{
+					"name": "filter-tasks",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{url}}/tasks?status=pending",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "assignee",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "date_from",
+									"value": "2025-10-15",
+									"disabled": true
+								},
+								{
+									"key": "date_to",
+									"value": "2025-10-21",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "2",
+									"disabled": true
+								}
 							]
 						}
 					},
